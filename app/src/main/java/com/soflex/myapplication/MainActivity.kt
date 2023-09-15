@@ -22,6 +22,9 @@ import com.theeasiestway.opus.Constants.Channels.Companion.mono
 import com.theeasiestway.opus.Constants.FrameSize.Companion._1920
 import com.theeasiestway.opus.Constants.SampleRate.Companion._48000
 import com.theeasiestway.opus.Opus
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Thread.sleep
 
 
 class MainActivity : ComponentActivity() {
@@ -134,12 +137,6 @@ class MainActivity : ComponentActivity() {
 
     private fun initAudio() {
 
-        codec.decoderInit(
-            _48000(),
-            mono()
-        )
-
-
         val sampleRate = 48000
         val bufferSize = AudioTrack.getMinBufferSize(
             sampleRate,
@@ -194,25 +191,38 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun decodeOpus() {
+        codec.decoderInit(
+            _48000(),
+            mono()
+        )
+
+        var audios = byteArrayOf()
         var total = 0
         try {
         for ((fila, ba) in lista.withIndex()) {
             val decoded: ByteArray? = codec.decode(ba, _1920())
             if (decoded != null) {
+                audios += decoded
                 var aux = 0
                 for (dato in decoded) {
                     aux += dato
                 }
                 total += aux
                 println("fila $fila aux: $aux tot: $total")
-
-                //audioTrack.write(decoded, 0, decoded.size)
+                audioTrack.write(decoded, 0, decoded.size)
+                sleep(10)
             }
         }
 
+            val file = File("audio.raw")
+            val fileOutputStream = FileOutputStream(file)
+            fileOutputStream.write(audios)
+            fileOutputStream.close()
+
         } catch (e: Exception) {
             println("DECODE ERR " + e.message)
-            Thread.sleep(100)
         }
+
+        codec.decoderRelease()
     }
 }
