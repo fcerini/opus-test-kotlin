@@ -191,13 +191,18 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun reset() {
-        codec.decoderRelease()
+
+        val decoRelease = codec.decoderRelease()
+        println("DEBUG codec.decoderRelease: $decoRelease")
 
         codec = Opus()
-        codec.decoderInit(
+
+        val decoInit = codec.decoderInit(
             sampleRate = Constants.SampleRate._48000(),
             channels = Constants.Channels.mono()
         )
+
+        println("DEBUG codec.decoderInit: $decoInit ")
 
     }
     private fun decodeOpus() {
@@ -223,8 +228,7 @@ class MainActivity : ComponentActivity() {
             println("DEBUG audio total: $total")
 
             val now = System.currentTimeMillis().toString()
-            val path =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val path = cacheDir
             val file = File(path, "/$now-audio.raw")
             val fileOutputStream = FileOutputStream(file)
             fileOutputStream.write(audios)
@@ -234,6 +238,6 @@ class MainActivity : ComponentActivity() {
             println("DECODE ERR " + e.message)
         }
 
-        codec.decoderRelease()
+        //codec.decoderRelease()
     }
 }
