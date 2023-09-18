@@ -1,9 +1,11 @@
 package com.soflex.myapplication
 
+import android.R.attr.path
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Bundle
+import android.os.Environment
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Row
@@ -213,8 +215,9 @@ class MainActivity : ComponentActivity() {
                 sleep(10)
             }
         }
-
-            val file = File("audio.raw")
+            val now = System.currentTimeMillis().toString()
+            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file: File = File(path, "/$now-audio.raw")
             val fileOutputStream = FileOutputStream(file)
             fileOutputStream.write(audios)
             fileOutputStream.close()
