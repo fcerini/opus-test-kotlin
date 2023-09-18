@@ -1,6 +1,5 @@
 package com.soflex.myapplication
 
-import android.R.attr.path
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -21,9 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.soflex.myapplication.ui.theme.MyApplicationTheme
 import com.theeasiestway.opus.Constants
-import com.theeasiestway.opus.Constants.Channels.Companion.mono
 import com.theeasiestway.opus.Constants.FrameSize.Companion._1920
-import com.theeasiestway.opus.Constants.SampleRate.Companion._48000
 import com.theeasiestway.opus.Opus
 import java.io.File
 import java.io.FileOutputStream
@@ -122,13 +119,14 @@ class MainActivity : ComponentActivity() {
                 .padding(10.dp)
         ) {
             Button(onClick = {
-                    load()
+                load()
+                reset()
             })
             {
                 Text(text = "LOAD")
             }
             Button(onClick = {
-                    decodeOpus()
+                decodeOpus()
             }) {
                 Text(text = "PLAY")
             }
@@ -192,7 +190,7 @@ class MainActivity : ComponentActivity() {
         return true
     }
 
-    fun reset() {
+    private fun reset() {
         codec.decoderRelease()
 
         codec = Opus()
@@ -200,6 +198,7 @@ class MainActivity : ComponentActivity() {
             sampleRate = Constants.SampleRate._48000(),
             channels = Constants.Channels.mono()
         )
+
     }
     private fun decodeOpus() {
 
@@ -208,7 +207,7 @@ class MainActivity : ComponentActivity() {
         var audios = byteArrayOf()
         var total = 0
         try {
-            for ((fila, ba) in lista.withIndex()) {
+            for (ba in lista) {
                 sleep(20)
                 val decoded: ByteArray? = codec.decode(ba, _1920())
                 if (decoded != null) {
@@ -218,22 +217,23 @@ class MainActivity : ComponentActivity() {
                         aux += dato
                     }
                     total += aux
-                    //println("fila $fila aux: $aux tot: $total")
                     audioTrack.write(decoded, 0, decoded.size)
                 }
             }
+            println("DEBUG audio total: $total")
+
             val now = System.currentTimeMillis().toString()
             val path =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val file: File = File(path, "/$now-audio.raw")
+            val file = File(path, "/$now-audio.raw")
             val fileOutputStream = FileOutputStream(file)
             fileOutputStream.write(audios)
             fileOutputStream.close()
 
-            println("DEBUG suma del audio : $total")
-
         } catch (e: Exception) {
             println("DECODE ERR " + e.message)
         }
+
+        codec.decoderRelease()
     }
 }
