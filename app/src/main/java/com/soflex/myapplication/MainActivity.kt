@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.soflex.myapplication.ui.theme.MyApplicationTheme
+import com.theeasiestway.opus.Constants
 import com.theeasiestway.opus.Constants.Channels.Companion.mono
 import com.theeasiestway.opus.Constants.FrameSize.Companion._1920
 import com.theeasiestway.opus.Constants.SampleRate.Companion._48000
@@ -121,21 +122,13 @@ class MainActivity : ComponentActivity() {
                 .padding(10.dp)
         ) {
             Button(onClick = {
-                Thread(Runnable {
-                    Thread.sleep(100)
                     load()
-                    println("decodeOpus FIN")
-                }).start()
-                    })
+            })
             {
                 Text(text = "LOAD")
             }
             Button(onClick = {
-                Thread(Runnable {
-                    Thread.sleep(100)
                     decodeOpus()
-                    println("decodeOpus FIN")
-                }).start()
             }) {
                 Text(text = "PLAY")
             }
@@ -199,40 +192,48 @@ class MainActivity : ComponentActivity() {
         return true
     }
 
-    private fun decodeOpus() {
+    fun reset() {
+        codec.decoderRelease()
+
+        codec = Opus()
         codec.decoderInit(
-            _48000(),
-            mono()
+            sampleRate = Constants.SampleRate._48000(),
+            channels = Constants.Channels.mono()
         )
+    }
+    private fun decodeOpus() {
+
+        reset()
 
         var audios = byteArrayOf()
         var total = 0
         try {
-        for ((fila, ba) in lista.withIndex()) {
-            val decoded: ByteArray? = codec.decode(ba, _1920())
-            if (decoded != null) {
-                audios += decoded
-                var aux = 0
-                for (dato in decoded) {
-                    aux += dato
+            for ((fila, ba) in lista.withIndex()) {
+                sleep(20)
+                val decoded: ByteArray? = codec.decode(ba, _1920())
+                if (decoded != null) {
+                    audios += decoded
+                    var aux = 0
+                    for (dato in decoded) {
+                        aux += dato
+                    }
+                    total += aux
+                    //println("fila $fila aux: $aux tot: $total")
+                    audioTrack.write(decoded, 0, decoded.size)
                 }
-                total += aux
-                println("fila $fila aux: $aux tot: $total")
-                audioTrack.write(decoded, 0, decoded.size)
-                sleep(10)
             }
-        }
             val now = System.currentTimeMillis().toString()
-            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val path =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val file: File = File(path, "/$now-audio.raw")
             val fileOutputStream = FileOutputStream(file)
             fileOutputStream.write(audios)
             fileOutputStream.close()
 
+            println("DEBUG suma del audio : $total")
+
         } catch (e: Exception) {
             println("DECODE ERR " + e.message)
         }
-
-        codec.decoderRelease()
     }
 }
