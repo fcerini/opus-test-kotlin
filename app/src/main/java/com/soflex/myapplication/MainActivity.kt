@@ -121,14 +121,21 @@ class MainActivity : ComponentActivity() {
                 .padding(10.dp)
         ) {
             Button(onClick = {
-                        load()
+                Thread(Runnable {
+                    Thread.sleep(100)
+                    load()
+                    println("decodeOpus FIN")
+                }).start()
                     })
             {
                 Text(text = "LOAD")
             }
             Button(onClick = {
+                Thread(Runnable {
+                    Thread.sleep(100)
                     decodeOpus()
                     println("decodeOpus FIN")
+                }).start()
             }) {
                 Text(text = "PLAY")
             }
